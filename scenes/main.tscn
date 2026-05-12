@@ -1,0 +1,72 @@
+[gd_scene format=3 uid="uid://cefe0ac57pygy"]
+
+[ext_resource type="Script" uid="uid://c45ja8f26v4vi" path="res://scripts/main.gd" id="1_ig7tw"]
+[ext_resource type="Texture2D" uid="uid://bh3bq2dluy4dc" path="res://assets/sprites/desktoplina1.png" id="2_0xm2m"]
+[ext_resource type="FontFile" uid="uid://gsrh4obs12y5" path="res://assets/fonts/PixelOperator8-Bold.ttf" id="4_1bvp3"]
+
+[node name="Main" type="Control" unique_id=1111350089]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ig7tw")
+current_state = 4
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=911909015]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Control" type="Control" parent="CenterContainer" unique_id=1541412359]
+layout_mode = 2
+
+[node name="Scplina" type="Sprite2D" parent="CenterContainer/Control" unique_id=1884999508]
+position = Vector2(0, 8)
+scale = Vector2(0.2747253, 0.23809522)
+texture = ExtResource("2_0xm2m")
+flip_h = true
+
+[node name="DigitalClock" type="Label" parent="CenterContainer/Control" unique_id=83267251]
+layout_mode = 0
+offset_left = -74.99999
+offset_top = -84.0
+offset_right = 75.00001
+offset_bottom = -61.0
+theme_override_fonts/font = ExtResource("4_1bvp3")
+theme_override_font_sizes/font_size = 8
+text = "Oli testeo"
+horizontal_alignment = 2
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="Headpat" type="Button" parent="CenterContainer/Control" unique_id=585571654]
+layout_mode = 0
+offset_left = -51.999992
+offset_top = -61.0
+offset_right = 32.000008
+offset_bottom = -13.0
+flat = true
+
+[node name="ThoughtsState" type="Label" parent="CenterContainer/Control" unique_id=934100718]
+visible = false
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="ClockTimer" type="Timer" parent="." unique_id=276394040]
+autostart = true
+
+[node name="StatesTimer" type="Timer" parent="." unique_id=1732174632]
+wait_time = 0.1
+
+[node name="SlowWalkingTimer" type="Timer" parent="." unique_id=809240760]
+wait_time = 0.5
+
+[connection signal="pressed" from="CenterContainer/Control/Headpat" to="." method="_on_headpat_pressed"]
+[connection signal="timeout" from="ClockTimer" to="." method="_on_clock_timer_timeout"]
+[connection signal="timeout" from="StatesTimer" to="." method="_on_states_timer_timeout"]
