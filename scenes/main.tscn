@@ -62,7 +62,6 @@ offset_bottom = 23.0
 autostart = true
 
 [node name="StatesTimer" type="Timer" parent="." unique_id=1732174632]
-wait_time = 0.1
 
 [node name="SlowWalkingTimer" type="Timer" parent="." unique_id=809240760]
 wait_time = 0.5

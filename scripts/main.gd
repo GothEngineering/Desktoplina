@@ -8,7 +8,7 @@ extends Control
 var neutralina = preload("res://assets/sprites/desktoplina1.png")
 var happylina = preload("res://assets/sprites/desktoplinasaludo.png")
 
-enum State { IDLE, WALKING, PACING, SLEEPING, FOLLOWING, }
+enum State { IDLE, WALKING, PACING, FOLLOWING, SLEEPING, }
 
 # This doesn't do nothing LMAO
 @export var current_state = State.IDLE
@@ -18,6 +18,14 @@ var direction = Vector2(1, 0)
 var is_walking = false
 var is_following = false
 var follow_speed = 1
+var is_sleeping = false
+var energy_drain = 0.5
+var energy_regen = 1
+
+var scplina_stats = {
+	"energy": 100,
+	
+}
 
 func _ready() -> void:
 	# Forcing the project settings, just in case
@@ -54,6 +62,17 @@ func _process(delta: float) -> void:
 	if is_following:
 		following_system()
 
+	# Energy system
+	if !is_sleeping:
+		scplina_stats["energy"] -= energy_drain * delta
+	else:
+		scplina_stats["energy"] += energy_regen * delta
+
+	scplina_stats["energy"] = clamp(scplina_stats["energy"], 0, 100)
+
+	if Input.is_action_just_pressed("Debug Print"):
+		print("Current state is: " + str(current_state))
+
 	# Screen boundaries, display server is everything about window management
 	# The pet won't go through the sides of the screen, but i think it can still go through the roof
 	var usable_space = DisplayServer.screen_get_usable_rect()
@@ -73,11 +92,13 @@ func following_system():
 	var windowpos = DisplayServer.window_get_position()
 	var mousepos = DisplayServer.mouse_get_position()
 	if mousepos.x > windowpos.x + 50:
-		windowpos.x += move_speed
+		windowpos.x += follow_speed
+		scplina.flip_h = true
 
 	elif mousepos.x < windowpos.x - 50:
-		windowpos.x -= move_speed
-	# Remember to make the direction change the sprite position, it should be easy i suppose
+		windowpos.x -= follow_speed
+		scplina.flip_h = false
+
 
 	DisplayServer.window_set_position(windowpos)
 
@@ -90,28 +111,30 @@ func _on_clock_timer_timeout() -> void: # It would be cool to have another label
 	var timer_countdown = states_timer.wait_time
 	#digital_clock.text = time # This is the normal clock, i'll use this as a placeholder for anims
 	digital_clock.text = str(timer_countdown)
+	print(scplina_stats["energy"])
 
 func _on_headpat_pressed() -> void:
-	scplina.texture = happylina
-	print("oli te amo")
-	await get_tree().create_timer(0.8).timeout
-	scplina.texture = neutralina
-	# Find a way to grab her and move her around, draggable
+	if !is_sleeping:
+		scplina.texture = happylina
+		print("oli te amo")
+		await get_tree().create_timer(0.8).timeout
+		scplina.texture = neutralina
+		# Find a way to grab her and move her around, draggable
 
 func _on_states_timer_timeout() -> void:
-	var random_state = randi() % 5
+	var random_state = randi() % 4 # Remember to exclude the sleeping state
 	states_timer.wait_time = randf_range(20.0, 30.0) # Default state in case of bug
 
 	# These are the "default" settings i want to reinforce each timeout
 	is_walking = false
 	is_following = false
+	is_sleeping = false
 	scplina.modulate = Color.WHITE
 	move_speed = 2
 	direction = Vector2(1, 0)
 	scplina.rotation_degrees = 0.0
 
 
-	# The status picker; maybe a State.(state).pick_random() would be better...
 	if random_state == 0:
 		current_state = State.IDLE
 	elif random_state == 1:
@@ -121,7 +144,8 @@ func _on_states_timer_timeout() -> void:
 	elif random_state == 3:
 		current_state = State.FOLLOWING
 	else:
-		current_state = State.SLEEPING
+		current_state = State.SLEEPING # Make the sleeping an actual need
+
 
 	match current_state:
 		State.IDLE:
@@ -145,7 +169,7 @@ func _on_states_timer_timeout() -> void:
 
 		State.FOLLOWING:
 			print("oli estoy siguiendote rawrrrr cosa peruana")
-			changing_state_timer(60.0, 100.0)
+			changing_state_timer(30.0, 60.0)
 			while current_state == State.FOLLOWING:
 				is_following = true
 				following_system()
@@ -154,6 +178,7 @@ func _on_states_timer_timeout() -> void:
 
 		State.SLEEPING:
 			print("mimimimimi zzzzzz")
+			is_sleeping = true
 			scplina.modulate = Color.STEEL_BLUE
 			changing_state_timer(50.0, 80.0)
 			scplina.rotation_degrees = 90.0
