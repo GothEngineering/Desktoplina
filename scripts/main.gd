@@ -10,17 +10,17 @@ var happylina = preload("res://assets/sprites/desktoplinasaludo.png")
 
 enum State { IDLE, WALKING, PACING, FOLLOWING, SLEEPING, }
 
-# This doesn't do nothing LMAO
+# This stopped working LMAO
 @export var current_state = State.IDLE
 
 var move_speed = 2
 var direction = Vector2(1, 0)
 var is_walking = false
 var is_following = false
-var follow_speed = 1
 var is_sleeping = false
-var energy_drain = 0.5
-var energy_regen = 1
+var follow_speed = 1
+var energy_drain = 1.0
+var energy_regen = 1.5
 
 var scplina_stats = {
 	"energy": 100,
@@ -62,6 +62,7 @@ func _process(delta: float) -> void:
 	if is_following:
 		following_system()
 
+
 	# Energy system
 	if !is_sleeping:
 		scplina_stats["energy"] -= energy_drain * delta
@@ -82,7 +83,7 @@ func _process(delta: float) -> void:
 	elif window.position.x < usable_space.position.x: #An elif is the middle choice of an if/else
 		direction.x = 1
 
-# I should change this so the pet really pathfinds on the screen instead of just moving statically
+# Movement systems
 func walking_system():
 	var window = get_window()
 	var move_window = Vector2i(direction * move_speed)
@@ -99,8 +100,8 @@ func following_system():
 		windowpos.x -= follow_speed
 		scplina.flip_h = false
 
-
 	DisplayServer.window_set_position(windowpos)
+
 
 func changing_state_timer(min_seconds, max_seconds):
 	var random_time = randf_range(min_seconds, max_seconds)
@@ -114,7 +115,7 @@ func _on_clock_timer_timeout() -> void: # It would be cool to have another label
 	print(scplina_stats["energy"])
 
 func _on_headpat_pressed() -> void:
-	if !is_sleeping:
+	if not is_sleeping:
 		scplina.texture = happylina
 		print("oli te amo")
 		await get_tree().create_timer(0.8).timeout
@@ -122,7 +123,7 @@ func _on_headpat_pressed() -> void:
 		# Find a way to grab her and move her around, draggable
 
 func _on_states_timer_timeout() -> void:
-	var random_state = randi() % 4 # Remember to exclude the sleeping state
+	var random_state = [0, 1, 2, 3].pick_random()
 	states_timer.wait_time = randf_range(20.0, 30.0) # Default state in case of bug
 
 	# These are the "default" settings i want to reinforce each timeout
@@ -134,17 +135,21 @@ func _on_states_timer_timeout() -> void:
 	direction = Vector2(1, 0)
 	scplina.rotation_degrees = 0.0
 
-
-	if random_state == 0:
-		current_state = State.IDLE
-	elif random_state == 1:
-		current_state = State.WALKING
-	elif random_state == 2:
-		current_state = State.PACING
-	elif random_state == 3:
-		current_state = State.FOLLOWING
+	# Okay just as a reminder or for anyone reading this mess of a code, the pet waits for the current
+	# state timer to finish to go to sleep; so basically if the pet gets to 0 energy and it still has 
+	# 20 seconds on the state timer, it will wait for those 20 seconds to finish and then go to sleep.
+	# I tried forcing the timeout() but it didn't work, so i'll research for a fix later.
+	if scplina_stats["energy"] <= 0: 
+		current_state = State.SLEEPING
 	else:
-		current_state = State.SLEEPING # Make the sleeping an actual need
+		if random_state == 0:
+			current_state = State.IDLE
+		elif random_state == 1:
+			current_state = State.WALKING
+		elif random_state == 2:
+			current_state = State.PACING
+		elif random_state == 3:
+			current_state = State.FOLLOWING
 
 
 	match current_state:
