@@ -4,6 +4,7 @@ extends Control
 @onready var scplina: Sprite2D = $CenterContainer/Control/Scplina
 @onready var states_timer: Timer = $StatesTimer
 @onready var slow_walking_timer: Timer = $SlowWalkingTimer
+@onready var random_event: Timer = $RandomEvent
 
 var neutralina = preload("res://assets/sprites/desktoplina1.png")
 var happylina = preload("res://assets/sprites/desktoplinasaludo.png")
@@ -45,6 +46,8 @@ func _ready() -> void:
 	# Things related with timers
 	randomize()
 	states_timer.start()
+	random_event.start(randi_range(60, 1000))
+	print("Random event will happen in: ", str(random_event.wait_time))
 
 func _process(delta: float) -> void:
 	var window = get_window()
@@ -193,3 +196,8 @@ func _on_states_timer_timeout() -> void:
 			states_timer.start()
 
 	states_timer.start()
+
+func _on_random_event_timeout() -> void:
+	random_event.start(randi_range(60, 1000))
+	# Random events will go here, use an array to get some weird shit like changing the sprite
+	# Or making a cute real photo of scp1471 for a second

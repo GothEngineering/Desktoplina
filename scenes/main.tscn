@@ -65,6 +65,9 @@ autostart = true
 [node name="SlowWalkingTimer" type="Timer" parent="." unique_id=809240760]
 wait_time = 0.5
 
+[node name="RandomEvent" type="Timer" parent="." unique_id=761903606]
+
 [connection signal="pressed" from="CenterContainer/Control/Headpat" to="." method="_on_headpat_pressed"]
 [connection signal="timeout" from="ClockTimer" to="." method="_on_clock_timer_timeout"]
 [connection signal="timeout" from="StatesTimer" to="." method="_on_states_timer_timeout"]
+[connection signal="timeout" from="RandomEvent" to="." method="_on_random_event_timeout"]
