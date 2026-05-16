@@ -5,9 +5,11 @@ extends Control
 @onready var states_timer: Timer = $StatesTimer
 @onready var slow_walking_timer: Timer = $SlowWalkingTimer
 @onready var random_event: Timer = $RandomEvent
+@onready var gibberish: Label = $CenterContainer/Control/Gibberish
 
 var neutralina = preload("res://assets/sprites/desktoplina1.png")
 var happylina = preload("res://assets/sprites/desktoplinasaludo.png")
+var sillylina = preload("res://assets/sprites/sillyhat.jpg")
 
 enum State { IDLE, WALKING, PACING, FOLLOWING, SLEEPING, }
 
@@ -27,7 +29,7 @@ var random_stuff = [
 	"weird message", 
 	"change sprite", 
 	"saying hello", 
-	"anomaly has entered the chat",
+	# I'll add more later
 ]
 
 var scplina_stats = {
@@ -56,7 +58,7 @@ func _ready() -> void:
 	# Things related with timers
 	randomize()
 	states_timer.start()
-	random_event.start(randi_range(60, 1000))
+	random_event.start(randi_range(60, 1000)) # Default values: 60, 1000
 	print("Random event will happen in: ", str(random_event.wait_time))
 
 func _process(delta: float) -> void:
@@ -208,14 +210,37 @@ func _on_states_timer_timeout() -> void:
 	states_timer.start()
 
 func _on_random_event_timeout() -> void:
-	random_event.start(randi_range(60, 1000))
+	random_event.start(randi_range(60, 1000)) # Real values: 60 and 1000
+	print("Random event will happen in: ", str(random_event.wait_time))
 	var chosen_event = random_stuff.pick_random()
-	if chosen_event == 0:
-		pass
-	elif chosen_event == 1:
-		pass
-	elif chosen_event == 2:
-		pass
-	elif chosen_event == 3:
-		pass
+	if chosen_event == "weird message":
+		var text_chosen = [0, 1, 2].pick_random() # Change the index to words just like the other var
+		gibberish.show() 
+		if text_chosen == 0:
+			gibberish.text = """Recipe for a chocolate brownie: ½ cup butter
+			1 cup white sugar
+			2 large eggs
+			1 teaspoon vanilla extract
+			⅓ cup unsweetened cocoa powder
+			½ cup all-purpose flour
+			¼ teaspoon salt
+			¼ teaspoon baking powder"""
+		elif text_chosen == 1:
+			gibberish.text = "t̴̓̽͜ú̸̗̀m̴̢̹̏̿b̷̝̣̃à̴̰l̸̩͒a̶͉̅c̶̮̺̀â̷̘̼̚š̵̟͇a̸̠̼͆ ̸̻̹̂ m̶̙͒̑ą̶͕̀̓m̸̞̊̾i̵̟͒̏"
+		elif text_chosen == 2:
+			gibberish.text = "youareworthyoflove"
+		#elif text_chosen == :
+			#gibberish.text = ""  # Place holder to add more text later, i wonder how many can i squeeze in
+		await get_tree().create_timer(3.0).timeout
+		gibberish.hide()
+
+	elif chosen_event == "change sprite":
+		print("changed sprite")
+
+	elif chosen_event == "saying hello":
+		print("saying hello")
 	# TO DO: Add the events on each array, also this is probably not the quickest way to do it
+	# The array states, on the actual order:
+	#"weird message", 
+	#"change sprite", 
+	#"saying hello", 
