@@ -23,16 +23,26 @@ var follow_speed = 1
 var energy_drain = 1.0
 var energy_regen = 1.5
 
+var random_stuff = [
+	"weird message", 
+	"change sprite", 
+	"saying hello", 
+	"anomaly has entered the chat",
+]
+
 var scplina_stats = {
 	"energy": 100,
 	
 }
 
 func _ready() -> void:
-	# Forcing the project settings, just in case
 	var window = get_window()
+
+	# Here's the "floor", aka the taskbar. TO DO: add a way for her to climb the sides of the screen
 	var usable_space = DisplayServer.screen_get_usable_rect()
-	var screen_size_taskless = usable_space.end.y - window.size.y
+	var screen_size_taskless = usable_space.end.y - window.size.y 
+
+	# Forcing the project settings, just in case
 	get_viewport().transparent_bg = true
 	window.transparent = true
 	window.unresizable = false
@@ -199,5 +209,13 @@ func _on_states_timer_timeout() -> void:
 
 func _on_random_event_timeout() -> void:
 	random_event.start(randi_range(60, 1000))
-	# Random events will go here, use an array to get some weird shit like changing the sprite
-	# Or making a cute real photo of scp1471 for a second
+	var chosen_event = random_stuff.pick_random()
+	if chosen_event == 0:
+		pass
+	elif chosen_event == 1:
+		pass
+	elif chosen_event == 2:
+		pass
+	elif chosen_event == 3:
+		pass
+	# TO DO: Add the events on each array, also this is probably not the quickest way to do it
