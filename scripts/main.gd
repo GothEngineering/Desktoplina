@@ -6,10 +6,10 @@ extends Control
 @onready var slow_walking_timer: Timer = $SlowWalkingTimer
 @onready var random_event: Timer = $RandomEvent
 @onready var gibberish: Label = $CenterContainer/Control/Gibberish
+@onready var sillylina: Sprite2D = $CenterContainer/Control/Sillylina
 
-var neutralina = preload("res://assets/sprites/desktoplina1.png")
-var happylina = preload("res://assets/sprites/desktoplinasaludo.png")
-var sillylina = preload("res://assets/sprites/sillyhat.jpg")
+var idlelina = preload("res://assets/sprites/desktoplina/desktoplina_idle.png")
+
 
 enum State { IDLE, WALKING, PACING, FOLLOWING, SLEEPING, }
 
@@ -60,6 +60,8 @@ func _ready() -> void:
 	states_timer.start()
 	random_event.start(randi_range(60, 1000)) # Default values: 60, 1000
 	print("Random event will happen in: ", str(random_event.wait_time))
+	
+	#_update_mouse_mask()
 
 func _process(delta: float) -> void:
 	var window = get_window()
@@ -98,6 +100,19 @@ func _process(delta: float) -> void:
 	elif window.position.x < usable_space.position.x: #An elif is the middle choice of an if/else
 		direction.x = 1
 
+# Work in progress!! this is the function to click on the empty holes of the sprite but it's
+# proving rather difficult
+#func _update_mouse_mask():
+	#var texture = scplina
+	#var image = texture.get_image()
+	#if scplina.flip_h:
+		#image.flip_x()
+	#var bitmap = BitMap.new()
+	#bitmap.create_from_image_alpha(image)
+
+	#var polygons = bitmap.opaque_to_polygons(Rect2(Vector2.ZERO, texture.get_size()), 0.1)
+	#DisplayServer.window_set_mouse_passthrough(polygons)
+
 # Movement systems
 func walking_system():
 	var window = get_window()
@@ -129,13 +144,12 @@ func _on_clock_timer_timeout() -> void: # It would be cool to have another label
 	digital_clock.text = str(timer_countdown)
 	print(scplina_stats["energy"])
 
-func _on_headpat_pressed() -> void:
+func _on_headpat_pressed() -> void: 
 	if not is_sleeping:
-		scplina.texture = happylina
 		print("oli te amo")
 		await get_tree().create_timer(0.8).timeout
-		scplina.texture = neutralina
 		# Find a way to grab her and move her around, draggable
+		# Also, give her a new sprite because i removed the other
 
 func _on_states_timer_timeout() -> void:
 	var random_state = [0, 1, 2, 3].pick_random()
@@ -149,6 +163,7 @@ func _on_states_timer_timeout() -> void:
 	move_speed = 2
 	direction = Vector2(1, 0)
 	scplina.rotation_degrees = 0.0
+	#_update_mouse_mask()
 
 	# Okay just as a reminder or for anyone reading this mess of a code, the pet waits for the current
 	# state timer to finish to go to sleep; so basically if the pet gets to 0 energy and it still has 
@@ -179,7 +194,7 @@ func _on_states_timer_timeout() -> void:
 
 		State.PACING:
 			print("oli toi pacing we")
-			changing_state_timer(20.0, 50.0)
+			changing_state_timer(30.0, 60.0)
 			while current_state == State.PACING:
 				slow_walking_timer.start(randf_range(2.0, 5.0))
 				is_walking = true
@@ -196,12 +211,12 @@ func _on_states_timer_timeout() -> void:
 				slow_walking_timer.start()
 				await slow_walking_timer.timeout
 
-		State.SLEEPING:
+		State.SLEEPING: 
 			print("mimimimimi zzzzzz")
 			is_sleeping = true
 			scplina.modulate = Color.STEEL_BLUE
 			changing_state_timer(50.0, 80.0)
-			scplina.rotation_degrees = 90.0
+			scplina.rotation_degrees = 90.0 # Remember to make a new scplina sleeping pose
 
 		_:
 			print("papu aiuda me bugie")
@@ -212,6 +227,7 @@ func _on_states_timer_timeout() -> void:
 func _on_random_event_timeout() -> void:
 	random_event.start(randi_range(60, 1000)) # Real values: 60 and 1000
 	print("Random event will happen in: ", str(random_event.wait_time))
+
 	var chosen_event = random_stuff.pick_random()
 	if chosen_event == "weird message":
 		var text_chosen = [0, 1, 2].pick_random() # Change the index to words just like the other var
@@ -234,8 +250,13 @@ func _on_random_event_timeout() -> void:
 		await get_tree().create_timer(3.0).timeout
 		gibberish.hide()
 
-	elif chosen_event == "change sprite":
-		print("changed sprite")
+	elif chosen_event == "change sprite": 
+		print("changed texture")
+		scplina.hide()
+		sillylina.show()
+		await get_tree().create_timer(0.5).timeout
+		scplina.show()
+		sillylina.hide()
 
 	elif chosen_event == "saying hello":
 		print("saying hello")

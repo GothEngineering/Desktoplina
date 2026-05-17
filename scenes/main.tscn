@@ -1,7 +1,8 @@
 [gd_scene format=3 uid="uid://cefe0ac57pygy"]
 
 [ext_resource type="Script" uid="uid://c45ja8f26v4vi" path="res://scripts/main.gd" id="1_ig7tw"]
-[ext_resource type="Texture2D" uid="uid://bh3bq2dluy4dc" path="res://assets/sprites/desktoplina1.png" id="2_0xm2m"]
+[ext_resource type="Texture2D" uid="uid://xdylbudusbog" path="res://assets/sprites/desktoplina/desktoplina_idle.png" id="2_sugp2"]
+[ext_resource type="Texture2D" uid="uid://cpnuoh5atno10" path="res://assets/sprites/sillyhat.jpg" id="3_jyhfs"]
 [ext_resource type="FontFile" uid="uid://gsrh4obs12y5" path="res://assets/fonts/PixelOperator8-Bold.ttf" id="4_1bvp3"]
 
 [node name="Main" type="Control" unique_id=1111350089]
@@ -25,10 +26,17 @@ grow_vertical = 2
 layout_mode = 2
 
 [node name="Scplina" type="Sprite2D" parent="CenterContainer/Control" unique_id=1884999508]
-position = Vector2(0, 8)
-scale = Vector2(0.2747253, 0.23809522)
-texture = ExtResource("2_0xm2m")
+position = Vector2(-7.6293945e-06, 0)
+scale = Vector2(0.23037505, 0.21460472)
+texture = ExtResource("2_sugp2")
 flip_h = true
+region_enabled = true
+region_rect = Rect2(1015, 585.4, 692.00024, 773.688)
+
+[node name="Sillylina" type="Sprite2D" parent="CenterContainer/Control" unique_id=1723572773]
+visible = false
+scale = Vector2(0.28181148, 0.28968656)
+texture = ExtResource("3_jyhfs")
 
 [node name="DigitalClock" type="Label" parent="CenterContainer/Control" unique_id=83267251]
 layout_mode = 0
