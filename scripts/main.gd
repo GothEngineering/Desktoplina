@@ -4,9 +4,11 @@ extends Control
 @onready var scplina: Sprite2D = $CenterContainer/Control/Scplina
 @onready var states_timer: Timer = $StatesTimer
 @onready var slow_walking_timer: Timer = $SlowWalkingTimer
+@onready var random_event: Timer = $RandomEvent
+@onready var gibberish: Label = $CenterContainer/Control/Gibberish
+@onready var sillylina: Sprite2D = $CenterContainer/Control/Sillylina
 
-var neutralina = preload("res://assets/sprites/desktoplina1.png")
-var happylina = preload("res://assets/sprites/desktoplinasaludo.png")
+var idlelina = preload("res://assets/sprites/desktoplina/desktoplina_idle.png")
 
 enum State { IDLE, WALKING, PACING, FOLLOWING, SLEEPING, }
 
@@ -21,6 +23,14 @@ var is_sleeping = false
 var follow_speed = 1
 var energy_drain = 1.0
 var energy_regen = 1.5
+var alternative_clock_text = false
+
+var random_stuff = [
+	"weird message", 
+	"change sprite", 
+	"saying hello", 
+	# TO DO: add more cool stuff, lil easter eggs or funny creepypasta thingies
+]
 
 var scplina_stats = {
 	"energy": 100,
@@ -28,10 +38,14 @@ var scplina_stats = {
 }
 
 func _ready() -> void:
-	# Forcing the project settings, just in case
 	var window = get_window()
+
+	# Here's the "floor", aka the taskbar. 
+	# TO DO: add a way for her to climb the sides of the screen
 	var usable_space = DisplayServer.screen_get_usable_rect()
-	var screen_size_taskless = usable_space.end.y - window.size.y
+	var screen_size_taskless = usable_space.end.y - window.size.y 
+
+	# Forcing the project settings, just in case
 	get_viewport().transparent_bg = true
 	window.transparent = true
 	window.unresizable = false
@@ -45,6 +59,10 @@ func _ready() -> void:
 	# Things related with timers
 	randomize()
 	states_timer.start()
+	random_event.start(randi_range(60, 1000)) # Default values: 60, 1000
+	print("Random event will happen in: ", str(random_event.wait_time))
+	
+	#_update_mouse_mask()
 
 func _process(delta: float) -> void:
 	var window = get_window()
@@ -59,6 +77,7 @@ func _process(delta: float) -> void:
 	if is_walking:
 		walking_system()
 
+	# If this variable is true; the pet will follow
 	if is_following:
 		following_system()
 
@@ -71,8 +90,9 @@ func _process(delta: float) -> void:
 
 	scplina_stats["energy"] = clamp(scplina_stats["energy"], 0, 100)
 
+	# Text above the sprite that says how many seconds it'll take for the state to finish
 	if Input.is_action_just_pressed("Debug Print"):
-		print("Current state is: " + str(current_state))
+		alternative_clock_text = !alternative_clock_text
 
 	# Screen boundaries, display server is everything about window management
 	# The pet won't go through the sides of the screen, but i think it can still go through the roof
@@ -82,6 +102,19 @@ func _process(delta: float) -> void:
 
 	elif window.position.x < usable_space.position.x: #An elif is the middle choice of an if/else
 		direction.x = 1
+
+# Work in progress!! this is the function to click on the empty holes of the sprite but it's
+# proving rather difficult
+#func _update_mouse_mask():
+	#var texture = scplina
+	#var image = texture.get_image()
+	#if scplina.flip_h:
+		#image.flip_x()
+	#var bitmap = BitMap.new()
+	#bitmap.create_from_image_alpha(image)
+
+	#var polygons = bitmap.opaque_to_polygons(Rect2(Vector2.ZERO, texture.get_size()), 0.1)
+	#DisplayServer.window_set_mouse_passthrough(polygons)
 
 # Movement systems
 func walking_system():
@@ -107,20 +140,20 @@ func changing_state_timer(min_seconds, max_seconds):
 	var random_time = randf_range(min_seconds, max_seconds)
 	states_timer.start(random_time)
 
-func _on_clock_timer_timeout() -> void: # It would be cool to have another label that shows emotions
+func _on_clock_timer_timeout() -> void: # TO DO: a thought label that says stuff like "zzz" and stuff
 	var time = Time.get_time_string_from_system()
 	var timer_countdown = states_timer.wait_time
-	#digital_clock.text = time # This is the normal clock, i'll use this as a placeholder for anims
-	digital_clock.text = str(timer_countdown)
-	print(scplina_stats["energy"])
+	if alternative_clock_text:
+		digital_clock.text = str(timer_countdown)
+	else:
+		digital_clock.text = time 
+	print(scplina_stats["energy"]) 
 
-func _on_headpat_pressed() -> void:
+func _on_headpat_pressed() -> void: 
 	if not is_sleeping:
-		scplina.texture = happylina
 		print("oli te amo")
 		await get_tree().create_timer(0.8).timeout
-		scplina.texture = neutralina
-		# Find a way to grab her and move her around, draggable
+	# Make her draggable and also add an sprite of giving headpats; this function is useless rn
 
 func _on_states_timer_timeout() -> void:
 	var random_state = [0, 1, 2, 3].pick_random()
@@ -134,6 +167,7 @@ func _on_states_timer_timeout() -> void:
 	move_speed = 2
 	direction = Vector2(1, 0)
 	scplina.rotation_degrees = 0.0
+	#_update_mouse_mask()
 
 	# Okay just as a reminder or for anyone reading this mess of a code, the pet waits for the current
 	# state timer to finish to go to sleep; so basically if the pet gets to 0 energy and it still has 
@@ -164,7 +198,7 @@ func _on_states_timer_timeout() -> void:
 
 		State.PACING:
 			print("oli toi pacing we")
-			changing_state_timer(20.0, 50.0)
+			changing_state_timer(30.0, 60.0)
 			while current_state == State.PACING:
 				slow_walking_timer.start(randf_range(2.0, 5.0))
 				is_walking = true
@@ -181,15 +215,57 @@ func _on_states_timer_timeout() -> void:
 				slow_walking_timer.start()
 				await slow_walking_timer.timeout
 
-		State.SLEEPING:
+		State.SLEEPING: 
 			print("mimimimimi zzzzzz")
 			is_sleeping = true
 			scplina.modulate = Color.STEEL_BLUE
 			changing_state_timer(50.0, 80.0)
-			scplina.rotation_degrees = 90.0
+			scplina.rotation_degrees = 90.0 # Remember to make a new scplina sleeping pose
 
 		_:
 			print("papu aiuda me bugie")
 			states_timer.start()
 
 	states_timer.start()
+
+func _on_random_event_timeout() -> void:
+	random_event.start(randi_range(60, 1000)) # Real values: 60 and 1000
+	print("Random event will happen in: ", str(random_event.wait_time))
+
+	var chosen_event = random_stuff.pick_random()
+	if chosen_event == "weird message":
+		var text_chosen = [0, 1, 2].pick_random() # Change the index to words just like the other var
+		gibberish.show() 
+		if text_chosen == 0:
+			gibberish.text = """Recipe for a chocolate brownie: ½ cup butter
+			1 cup white sugar
+			2 large eggs
+			1 teaspoon vanilla extract
+			⅓ cup unsweetened cocoa powder
+			½ cup all-purpose flour
+			¼ teaspoon salt
+			¼ teaspoon baking powder"""
+		elif text_chosen == 1:
+			gibberish.text = "t̴̓̽͜ú̸̗̀m̴̢̹̏̿b̷̝̣̃à̴̰l̸̩͒a̶͉̅c̶̮̺̀â̷̘̼̚š̵̟͇a̸̠̼͆ ̸̻̹̂ m̶̙͒̑ą̶͕̀̓m̸̞̊̾i̵̟͒̏"
+		elif text_chosen == 2:
+			gibberish.text = "youareworthyoflove"
+		#elif text_chosen == :
+			#gibberish.text = ""  # Place holder to add more text later, i wonder how many can i squeeze in
+		await get_tree().create_timer(3.0).timeout
+		gibberish.hide()
+
+	elif chosen_event == "change sprite": 
+		print("changed texture")
+		scplina.hide()
+		sillylina.show()
+		await get_tree().create_timer(0.5).timeout
+		scplina.show()
+		sillylina.hide()
+
+	elif chosen_event == "saying hello":
+		print("saying hello")
+	# TO DO: Add the events on each array, also this is probably not the quickest way to do it
+	# The array states, on the actual order:
+	#"weird message", 
+	#"change sprite", 
+	#"saying hello", 
