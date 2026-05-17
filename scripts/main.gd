@@ -10,7 +10,6 @@ extends Control
 
 var idlelina = preload("res://assets/sprites/desktoplina/desktoplina_idle.png")
 
-
 enum State { IDLE, WALKING, PACING, FOLLOWING, SLEEPING, }
 
 # This stopped working LMAO
@@ -24,12 +23,13 @@ var is_sleeping = false
 var follow_speed = 1
 var energy_drain = 1.0
 var energy_regen = 1.5
+var alternative_clock_text = false
 
 var random_stuff = [
 	"weird message", 
 	"change sprite", 
 	"saying hello", 
-	# I'll add more later
+	# TO DO: add more cool stuff, lil easter eggs or funny creepypasta thingies
 ]
 
 var scplina_stats = {
@@ -40,7 +40,8 @@ var scplina_stats = {
 func _ready() -> void:
 	var window = get_window()
 
-	# Here's the "floor", aka the taskbar. TO DO: add a way for her to climb the sides of the screen
+	# Here's the "floor", aka the taskbar. 
+	# TO DO: add a way for her to climb the sides of the screen
 	var usable_space = DisplayServer.screen_get_usable_rect()
 	var screen_size_taskless = usable_space.end.y - window.size.y 
 
@@ -76,6 +77,7 @@ func _process(delta: float) -> void:
 	if is_walking:
 		walking_system()
 
+	# If this variable is true; the pet will follow
 	if is_following:
 		following_system()
 
@@ -88,8 +90,9 @@ func _process(delta: float) -> void:
 
 	scplina_stats["energy"] = clamp(scplina_stats["energy"], 0, 100)
 
+	# Text above the sprite that says how many seconds it'll take for the state to finish
 	if Input.is_action_just_pressed("Debug Print"):
-		print("Current state is: " + str(current_state))
+		alternative_clock_text = !alternative_clock_text
 
 	# Screen boundaries, display server is everything about window management
 	# The pet won't go through the sides of the screen, but i think it can still go through the roof
@@ -137,19 +140,20 @@ func changing_state_timer(min_seconds, max_seconds):
 	var random_time = randf_range(min_seconds, max_seconds)
 	states_timer.start(random_time)
 
-func _on_clock_timer_timeout() -> void: # It would be cool to have another label that shows emotions
+func _on_clock_timer_timeout() -> void: # TO DO: a thought label that says stuff like "zzz" and stuff
 	var time = Time.get_time_string_from_system()
 	var timer_countdown = states_timer.wait_time
-	#digital_clock.text = time # This is the normal clock, i'll use this as a placeholder for anims
-	digital_clock.text = str(timer_countdown)
-	print(scplina_stats["energy"])
+	if alternative_clock_text:
+		digital_clock.text = str(timer_countdown)
+	else:
+		digital_clock.text = time 
+	print(scplina_stats["energy"]) 
 
 func _on_headpat_pressed() -> void: 
 	if not is_sleeping:
 		print("oli te amo")
 		await get_tree().create_timer(0.8).timeout
-		# Find a way to grab her and move her around, draggable
-		# Also, give her a new sprite because i removed the other
+	# Make her draggable and also add an sprite of giving headpats; this function is useless rn
 
 func _on_states_timer_timeout() -> void:
 	var random_state = [0, 1, 2, 3].pick_random()
